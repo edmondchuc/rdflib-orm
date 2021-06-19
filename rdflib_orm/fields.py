@@ -5,8 +5,6 @@ from typing import Union, List
 from rdflib import URIRef, Literal
 from rdflib.namespace import XSD
 
-from rdflib_orm.db.models import Model
-
 
 class FieldError(Exception):
     pass
@@ -62,18 +60,18 @@ class CharField(Field):
 
 
 class IRIField(Field):
-    def __init__(self, predicate: URIRef, value: Union[URIRef, str, Model, List[Union[URIRef, str, Model]]] = None, inverse: URIRef = None, required: bool = False, many: bool = False):
+    def __init__(self, predicate: URIRef, value: Union[URIRef, str, 'Model', List[Union[URIRef, str, 'Model']]] = None, inverse: URIRef = None, required: bool = False, many: bool = False):
         self.predicate = predicate
         self.value = value
         self.inverse = inverse
         self.required = required
         self.many = many
 
-    def convert(self, value: Union[URIRef, Model, List[Union[URIRef, Model]]], **kwargs):
+    def convert(self, value: Union[URIRef, 'Model', List[Union[URIRef, 'Model']]], **kwargs):
         if value is None:
             return None
         if not isinstance(value, list):
-            if isinstance(value, Model):
+            if isinstance(value, 'Model'):
                 return value.__uri__
             try:
                 return URIRef(value)
@@ -151,3 +149,19 @@ class IntegerField(Field):
 
     def convert_to_python(self, value):
         return int(value)
+
+
+class RelationshipField(Field):
+    def __init__(self, to: 'Model', predicate: URIRef, required: bool = False):
+        self.to = to
+        self.predicate = predicate
+        self.required = required
+
+    def convert(self, value, **kwargs):
+        return None
+
+    def convert_to_python(self, value):
+        return self.to.objects.get(uri=value)
+
+
+from rdflib_orm.models import Model

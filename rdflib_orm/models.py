@@ -3,9 +3,9 @@ import logging
 import traceback
 from typing import List
 
-from rdflib import Graph, URIRef
+from rdflib import Graph, URIRef, BNode
 
-from . import Database
+from rdflib_orm.db import Database
 
 logger = logging.getLogger(__name__)
 
@@ -74,7 +74,8 @@ class Query:
         # TODO: Look at raising the same exceptions as Django.
         #  See https://docs.djangoproject.com/en/3.1/topics/db/queries/#retrieving-a-single-object-with-get
         db = Database.get_db(db_key)
-        uri = URIRef(uri)
+        if not isinstance(uri, BNode):
+            uri = URIRef(uri)
         if db.is_sparql_store:
         # if isinstance(Database.g.store, SPARQLUpdateStore) or isinstance(Database.g.store, SPARQLStore):
         #     uri = kwargs.get('uri', None)
@@ -277,7 +278,7 @@ WHERE {{
                 queryset.add(self.model_class(instance_uri, **to_be_instance_values))
         else:
             for key, val in kwargs.items():
-                filtered_attr: Field = getattr(self.model_class, key)
+                filtered_attr: 'Field' = getattr(self.model_class, key)
                 converted_value = filtered_attr.convert(val)
                 instance_uris = self._get_instance_uri_by_predicate_and_value(filtered_attr.predicate, converted_value, db)
 
@@ -533,4 +534,4 @@ class Model(metaclass=ModelBase):
 
 
 # Avoid circular imports by importing fields after the model-related classes have been initialised.
-from .fields import *
+from rdflib_orm.fields import *

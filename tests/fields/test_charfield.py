@@ -1,7 +1,7 @@
 import pytest
 from rdflib import RDFS, OWL, RDF
 
-from rdflib_orm.db import models
+from rdflib_orm import models
 
 
 def test_required_field_raises_exception():

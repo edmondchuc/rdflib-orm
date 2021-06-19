@@ -1,7 +1,8 @@
 from rdflib import Graph
 from rdflib.namespace import DCTERMS, SKOS, OWL, DCAT, RDFS, RDF
 
-from rdflib_orm.db import models, Database
+from rdflib_orm.db import Database
+from rdflib_orm import models
 
 
 class Common(models.Model):

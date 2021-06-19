@@ -24,9 +24,9 @@
     skos:prefLabel "Another concept"@en .
 
 <https://linked.data.gov.au/def/concept_scheme> a skos:ConceptScheme ;
-    dcterms:created "2021-05-28T21:04:54.697731"^^xsd:dateTime ;
+    dcterms:created "2021-06-20T00:25:03.214931"^^xsd:dateTime ;
     dcterms:creator <https://linked.data.gov.au/org/cgi> ;
-    dcterms:modified "2021-05-28T21:04:54.697731"^^xsd:dateTime ;
+    dcterms:modified "2021-06-20T00:25:03.217929"^^xsd:dateTime ;
     dcterms:provenance "Generated using Python"@en ;
     dcterms:publisher <https://linked.data.gov.au/org/ga> ;
     dcterms:title "Modified concept scheme title"@en ;
