@@ -314,7 +314,10 @@ WHERE {{
                                 if isinstance(kwargs[k], list) and isinstance(kwargs[k][0], URIRef):
                                     # Process the list to compare that they are the same by casting to string,
                                     # since the to_be_instance_values always contains Python types.
-                                    kwargs[k] = [str(uri) for uri in kwargs[k]]
+                                    # kwargs[k] = [str(uri) for uri in kwargs[k]]
+                                    if k == 'class_type' and all(str(x) in to_be_instance_values[k] for x in kwargs[k]):
+                                        is_match = True
+                                        continue
                                 if sorted(kwargs[k]) == sorted(to_be_instance_values[k]):
                                     is_match = True
                                 else:
