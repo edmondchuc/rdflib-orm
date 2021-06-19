@@ -1,0 +1,38 @@
+@prefix dcat: <http://www.w3.org/ns/dcat#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<https://linked.data.gov.au/def/concept_a> a skos:Concept ;
+    dcterms:provenance "Generated using RDFLib"@en ;
+    rdfs:isDefinedBy <https://linked.data.gov.au/def/concept_scheme> ;
+    skos:altLabel "An alt label",
+        "another alt label" ;
+    skos:broader <https://linked.data.gov.au/def/concept_b> ;
+    skos:definition "Definition of this concept."@en ;
+    skos:notation "123",
+        "456" ;
+    skos:prefLabel "A concept"@en .
+
+<https://linked.data.gov.au/def/concept_b> a skos:Concept ;
+    dcterms:provenance "Generated using rdflib-orm"@en ;
+    rdfs:isDefinedBy <https://linked.data.gov.au/def/concept_scheme> ;
+    skos:definition "Definition is not optional."@en ;
+    skos:narrower <https://linked.data.gov.au/def/concept_a> ;
+    skos:prefLabel "Another concept"@en .
+
+<https://linked.data.gov.au/def/concept_scheme> a skos:ConceptScheme ;
+    dcterms:created "2021-05-28T21:04:54.697731"^^xsd:dateTime ;
+    dcterms:creator <https://linked.data.gov.au/org/cgi> ;
+    dcterms:modified "2021-05-28T21:04:54.697731"^^xsd:dateTime ;
+    dcterms:provenance "Generated using Python"@en ;
+    dcterms:publisher <https://linked.data.gov.au/org/ga> ;
+    dcterms:title "Modified concept scheme title"@en ;
+    rdfs:seeAlso <http://another.example.com>,
+        <http://example.com> ;
+    owl:versionInfo "0.1.0" ;
+    skos:definition "A description of this concept scheme."@en ;
+    dcat:contactPoint "A custodian name" .
+
