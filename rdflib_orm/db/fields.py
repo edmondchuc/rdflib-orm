@@ -138,3 +138,16 @@ class BooleanField(Field):
             return True
         else:
             raise Exception(f'Could not parse value "{value}" to Python bool.')
+
+
+class IntegerField(Field):
+    def __init__(self, predicate: URIRef, value: int = None, required: bool = False):
+        self.predicate = predicate
+        self.value = value
+        self.required = required
+
+    def convert(self, value, **kwargs):
+        return Literal(value) if value is not None else None
+
+    def convert_to_python(self, value):
+        return int(value)
