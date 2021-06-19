@@ -1,6 +1,6 @@
 import abc
 import datetime
-from typing import Union, List
+from typing import Union, List, Type
 
 from rdflib import URIRef, Literal
 from rdflib.namespace import XSD
@@ -152,7 +152,7 @@ class IntegerField(Field):
 
 
 class RelationshipField(Field):
-    def __init__(self, to: 'Model', predicate: URIRef, required: bool = False):
+    def __init__(self, to: Type['Model'], predicate: URIRef, required: bool = False):
         self.to = to
         self.predicate = predicate
         self.required = required
