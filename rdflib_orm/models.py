@@ -25,6 +25,12 @@ class QuerySet(set):
                 instance += str(item)
         return f'<{self.__class__.__name__} [{instance}]>'
 
+    def order_by(self, value: str):
+        """Model.objects.all().order_by('label')"""
+        queryset = list(self)
+        queryset.sort(key=lambda x: getattr(x, value))
+        return queryset
+
 
 class Query:
     def __init__(self, model_class: 'Model'):
