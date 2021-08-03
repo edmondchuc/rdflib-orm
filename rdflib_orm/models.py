@@ -1,7 +1,7 @@
 import inspect
 import logging
 import traceback
-from typing import List
+from typing import List, Type
 
 from rdflib import Graph, URIRef, BNode
 
@@ -33,7 +33,7 @@ class QuerySet(set):
 
 
 class Query:
-    def __init__(self, model_class: 'Model'):
+    def __init__(self, model_class: Type['Model']):
         self.model_class = model_class
         super(Query, self).__init__()
 
@@ -123,23 +123,33 @@ WHERE {{
                 if uri:
                     g.add((uri, row['p'], row['o']))
                 else:
-                    # TODO: This won't happen anymore now that uri is a mandatory arg in this get function.
+                    # TODO: This won't happen anymore now that uri is a mandatory arg in this get function. Remove.
                     g.add((row['uri'], row['p'], row['o']))
 
             model_attributes = self.model_class.get_model_attributes(self.model_class)
             # Attribute and values to use to create an instance of self.model.
             to_be_instance_values = dict()
 
-            for s, p, o in g.triples((None, None, None)):
+            for s, p, o in db.read((None, None, None)):
                 for model_attr in model_attributes:
                     if model_attr[1].predicate == p:
                         if model_attr[0] not in to_be_instance_values:
-                            to_be_instance_values[model_attr[0]] = model_attr[1].convert_to_python(o)
+                            # to_be_instance_values[model_attr[0]] = model_attr[1].convert_to_python(o)
+                            python_value = model_attr[1].convert_to_python(o)
+                            # if isinstance(python_value, list) and to_be_instance_values.get(model_attr[0]) and isinstance(to_be_instance_values[model_attr[0]], list):
+                            #     to_be_instance_values[model_attr[0]] += python_value
+                            # else:
+                            to_be_instance_values[model_attr[0]] = python_value
+
                         else:
                             # There's more than one value for this predicate.
                             # Convert the current value into a list and append the new value or
                             # simply append to the existing list.
-                            if isinstance(to_be_instance_values[model_attr[0]], list):
+                            python_value = model_attr[1].convert_to_python(o)
+                            if isinstance(to_be_instance_values[model_attr[0]], list) and isinstance(python_value, list):
+                                to_be_instance_values[model_attr[0]] += python_value
+                            elif isinstance(to_be_instance_values[model_attr[0]], list) and not isinstance(python_value,
+                                                                                                           list):
                                 to_be_instance_values[model_attr[0]].append(model_attr[1].convert_to_python(o))
                             else:
                                 to_be_instance_values[model_attr[0]] = [to_be_instance_values[model_attr[0]],
@@ -163,18 +173,27 @@ WHERE {{
                 for model_attr in model_attributes:
                     if model_attr[1].predicate == p:
                         if model_attr[0] not in to_be_instance_values:
-                            to_be_instance_values[model_attr[0]] = model_attr[1].convert_to_python(o)
+                            # to_be_instance_values[model_attr[0]] = model_attr[1].convert_to_python(o)
+                            python_value = model_attr[1].convert_to_python(o)
+                            # if isinstance(python_value, list) and to_be_instance_values.get(model_attr[0]) and isinstance(to_be_instance_values[model_attr[0]], list):
+                            #     to_be_instance_values[model_attr[0]] += python_value
+                            # else:
+                            to_be_instance_values[model_attr[0]] = python_value
+
                         else:
                             # There's more than one value for this predicate.
                             # Convert the current value into a list and append the new value or
                             # simply append to the existing list.
-                            if isinstance(to_be_instance_values[model_attr[0]], list):
-                                to_be_instance_values[model_attr[0]].append(
-                                    model_attr[1].convert_to_python(o))
+                            python_value = model_attr[1].convert_to_python(o)
+                            if isinstance(to_be_instance_values[model_attr[0]], list) and isinstance(python_value,
+                                                                                                     list):
+                                to_be_instance_values[model_attr[0]] += python_value
+                            elif isinstance(to_be_instance_values[model_attr[0]], list) and not isinstance(python_value,
+                                                                                                           list):
+                                to_be_instance_values[model_attr[0]].append(model_attr[1].convert_to_python(o))
                             else:
-                                to_be_instance_values[model_attr[0]] = [
-                                    to_be_instance_values[model_attr[0]],
-                                    model_attr[1].convert_to_python(o)]
+                                to_be_instance_values[model_attr[0]] = [to_be_instance_values[model_attr[0]],
+                                                                        model_attr[1].convert_to_python(o)]
                         continue
 
             # Check and see if the to_be_instance_values dict
@@ -266,16 +285,27 @@ WHERE {{
                 # Attribute and values to use to create an instance of self.model.
                 to_be_instance_values = dict()
 
-                for s, p, o in g.triples((instance_uri, None, None)):
+                for s, p, o in db.read((instance_uri, None, None)):
                     for model_attr in model_attributes:
                         if model_attr[1].predicate == p:
                             if model_attr[0] not in to_be_instance_values:
-                                to_be_instance_values[model_attr[0]] = model_attr[1].convert_to_python(o)
+                                # to_be_instance_values[model_attr[0]] = model_attr[1].convert_to_python(o)
+                                python_value = model_attr[1].convert_to_python(o)
+                                # if isinstance(python_value, list) and to_be_instance_values.get(model_attr[0]) and isinstance(to_be_instance_values[model_attr[0]], list):
+                                #     to_be_instance_values[model_attr[0]] += python_value
+                                # else:
+                                to_be_instance_values[model_attr[0]] = python_value
+
                             else:
                                 # There's more than one value for this predicate.
                                 # Convert the current value into a list and append the new value or
                                 # simply append to the existing list.
-                                if isinstance(to_be_instance_values[model_attr[0]], list):
+                                python_value = model_attr[1].convert_to_python(o)
+                                if isinstance(to_be_instance_values[model_attr[0]], list) and isinstance(python_value,
+                                                                                                         list):
+                                    to_be_instance_values[model_attr[0]] += python_value
+                                elif isinstance(to_be_instance_values[model_attr[0]], list) and not isinstance(
+                                        python_value, list):
                                     to_be_instance_values[model_attr[0]].append(model_attr[1].convert_to_python(o))
                                 else:
                                     to_be_instance_values[model_attr[0]] = [to_be_instance_values[model_attr[0]],
@@ -298,12 +328,21 @@ WHERE {{
                             for model_attr in model_attributes:
                                 if model_attr[1].predicate == p:
                                     if model_attr[0] not in to_be_instance_values:
-                                        to_be_instance_values[model_attr[0]] = model_attr[1].convert_to_python(o)
+                                        # to_be_instance_values[model_attr[0]] = model_attr[1].convert_to_python(o)
+                                        python_value = model_attr[1].convert_to_python(o)
+                                        # if isinstance(python_value, list) and to_be_instance_values.get(model_attr[0]) and isinstance(to_be_instance_values[model_attr[0]], list):
+                                        #     to_be_instance_values[model_attr[0]] += python_value
+                                        # else:
+                                        to_be_instance_values[model_attr[0]] = python_value
+
                                     else:
                                         # There's more than one value for this predicate.
                                         # Convert the current value into a list and append the new value or
                                         # simply append to the existing list.
-                                        if isinstance(to_be_instance_values[model_attr[0]], list):
+                                        python_value = model_attr[1].convert_to_python(o)
+                                        if isinstance(to_be_instance_values[model_attr[0]], list) and isinstance(python_value, list):
+                                            to_be_instance_values[model_attr[0]] += python_value
+                                        elif isinstance(to_be_instance_values[model_attr[0]], list) and not isinstance(python_value, list):
                                             to_be_instance_values[model_attr[0]].append(model_attr[1].convert_to_python(o))
                                         else:
                                             to_be_instance_values[model_attr[0]] = [to_be_instance_values[model_attr[0]], model_attr[1].convert_to_python(o)]
@@ -383,7 +422,8 @@ class Model(metaclass=ModelBase):
         # TODO: Improve this.
         raise NotImplementedError()
 
-    def get_model_attributes(self) -> List[tuple[str, any]]:
+    @staticmethod
+    def get_model_attributes(cls) -> List[tuple[str, any]]:
         return list(
             # Filter instance attributes.
             filter(
@@ -394,7 +434,7 @@ class Model(metaclass=ModelBase):
                     and not inspect.ismethod(tuple_item[1])
                     # Filter out ORM reserved attributes.
                     and tuple_item[0] not in ('objects', 'get_model_attributes', 'save', 'Meta', 'serialize'),
-                inspect.getmembers(self)
+                inspect.getmembers(cls)
             )
         )
 
@@ -411,11 +451,11 @@ class Model(metaclass=ModelBase):
             else:
                 self.__uri__ = URIRef(uri)
 
-        self.__attributes__ = self.get_model_attributes()
+        self.__attributes__ = self.get_model_attributes(self)
 
         # try:
         for attribute_name, attribute_field in self.__attributes__:
-            if kwargs.get(attribute_name):
+            if kwargs.get(attribute_name) is not None:
                 value = kwargs[attribute_name]
                 attribute_field.validate(value, cls, attribute_name)
                 # converted_value = attribute_field.convert(value)
@@ -520,8 +560,8 @@ class Model(metaclass=ModelBase):
                             db.write((converted_value, inverse, uri))
         except Exception as e:
             # Something bad happened, rollback.
-            logger.error(traceback.print_exc())
-            logger.error(str(e))
+            # logger.error(traceback.print_exc())
+            # logger.error(str(e))
 
             # Delete the current transaction.
             logger.info('Rolling back transaction')
@@ -537,6 +577,8 @@ class Model(metaclass=ModelBase):
                 db.write((s, p, o))
 
             logger.info('Transaction rollback complete')
+
+            raise e
 
 
 # Avoid circular imports by importing fields after the model-related classes have been initialised.

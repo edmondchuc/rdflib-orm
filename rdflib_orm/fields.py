@@ -30,7 +30,7 @@ class Field(abc.ABC):
 
 class CharField(Field):
     # TODO: Add many field.
-    def __init__(self, predicate: URIRef, value: str = None, max_length: int = None, required: bool = False, lang: str = '', many=False):
+    def __init__(self, predicate: URIRef, value: str = None, max_length: int = None, required: bool = False, lang: str = '', many: bool = False):
         self.predicate = predicate
         self.max_length = max_length
         self.value = value
@@ -48,15 +48,21 @@ class CharField(Field):
     def convert(self, value, **kwargs):
         if value is None:
             return None
-        if not isinstance(value, list):
+        if isinstance(value, str):
+            if self.many is True:
+                raise FieldError(f'Expected a list but got {type(value)} "{value}" instead.')
             return Literal(value, lang=self.lang)
         else:
             # TODO: Improve error message.
-            assert isinstance(value, list), f'Expected a list.'
-            return [Literal(item) for item in value]
+            if not isinstance(value, list):
+                raise FieldError(f'Expected a list.')
+            return [Literal(item, lang=self.lang) for item in value]
 
     def convert_to_python(self, value):
-        return str(value) if value is not None else None
+        if self.many:
+            return [str(value)]
+        else:
+            return str(value) if value is not None else None
 
 
 class IRIField(Field):
@@ -70,17 +76,17 @@ class IRIField(Field):
     def convert(self, value: Union[URIRef, 'Model', List[Union[URIRef, 'Model']]], **kwargs):
         if value is None:
             return None
-        if not isinstance(value, list):
-            if isinstance(value, 'Model'):
+        if isinstance(value, str):
+            if self.many is True:
+                raise FieldError(f'Expected a list but got "{value}" instead.')
+            if isinstance(value, Model):
                 return value.__uri__
-            try:
+            else:
                 return URIRef(value)
-            except Exception as e:
-                # TODO: This failed because value is a list of class URIs while self.many is False.
-                raise Exception(str(e) + ' ' + str(value))
         else:
             # TODO: Improve error message.
-            assert isinstance(value, list), f'Expected a list.'
+            if not isinstance(value, list):
+                raise FieldError(f'Expected a list.')
             result = list()
             for item in value:
                 if isinstance(item, Model):
@@ -89,10 +95,19 @@ class IRIField(Field):
                     result.append(URIRef(item))
             return result
 
+    # def convert_to_python(self, value):
+    #     if isinstance(value, Model):
+    #         return str(value.__uri__)
+    #     return str(value) if value is not None else None
     def convert_to_python(self, value):
-        if isinstance(value, Model):
-            return str(value.__uri__)
-        return str(value) if value is not None else None
+        if self.many:
+            if isinstance(value, Model):
+                return [str(value.__uri__)]
+            return [str(value)]
+        else:
+            if isinstance(value, Model):
+                return str(value.__uri__)
+            return str(value)
 
 
 class DateTimeField(Field):
@@ -151,17 +166,30 @@ class IntegerField(Field):
         return int(value)
 
 
-class RelationshipField(Field):
-    def __init__(self, to: Type['Model'], predicate: URIRef, required: bool = False):
+class RelationshipField(IRIField):
+    def __init__(self, to: Type['Model'], predicate: URIRef, required: bool = False, many: bool = False):
+        super().__init__(predicate, required=required, many=many)
         self.to = to
         self.predicate = predicate
+        # TODO: Do we need value here?
         self.required = required
-
-    def convert(self, value, **kwargs):
-        return None
+        self.many = many
 
     def convert_to_python(self, value):
-        return self.to.objects.get(uri=value)
+        result = self.to.objects.get(uri=value)
+        if self.many:
+            if isinstance(result, list):
+                return result
+            else:
+                return [result]
+        else:
+            if isinstance(result, list):
+                # TODO: This doesn't get triggered. Need to handle outside of fields (in models.py) when
+                #   we encounter more than one value when self.many is False.
+                # Basically self.many is only enforced when creating the model, but doesn't throw an error
+                # or anything when we retrieve more than one value for the same field.
+                raise FieldError('Retrieving data resulted in a list when self.many is False.')
+            return result
 
 
 from rdflib_orm.models import Model

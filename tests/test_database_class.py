@@ -4,9 +4,7 @@ from rdflib import Graph, URIRef
 from rdflib.plugins.stores.sparqlstore import SPARQLStore, SPARQLUpdateStore
 
 from rdflib_orm.db import Database, InvalidDBKeyTypeError
-
-
-BASE_URI = 'http://example.com/'
+from tests import BASE_URI
 
 
 def test_database_init_sets_sparql_store_bool_false():
