@@ -1,6 +1,6 @@
- # rdflib-orm
- 
-A Python ORM for working with RDF.
+# rdflib-orm
+
+A Python ORM for working with RDF. Note, this is experimental software not suited for production, yet.
  
 ## Usage
 
