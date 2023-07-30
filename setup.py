@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="rdflib-orm",
-    version="0.2.0",
+    version="0.3.0",
     author="Edmond Chuc",
     author_email="edmond.chuc@gmail.com",
     description="An ORM-like API for Python's RDFLib.",
@@ -26,8 +26,7 @@ setuptools.setup(
     ],
     python_requires='>=3.6',
     install_requires=[
-        'rdflib==5.0.0',
-        'rdflib-jsonld==0.5.0',
+        'rdflib>=6.0.0',
         'requests==2.25.1',
     ],
 )
